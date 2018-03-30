@@ -66,9 +66,6 @@ def insert_worker(server, storage):
     cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
     cn.connect()
 
-    print('Получение данных сервера %s' % server)
-    parser.get_info_file(server, out_dir=tmp_dir)
-
     print('Обработка хранилища %s сервера %s' % (storage, server))
 
     f = join(tmp_dir, types[storage]['file'])
@@ -150,6 +147,8 @@ if __name__ == '__main__':
 
         if namespace.update:
             for server in u_server_list:
+                print('Получение данных сервера %s' % server)
+                parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
 
