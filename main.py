@@ -3,6 +3,7 @@ import argparse
 import logger_module
 from datetime import datetime
 from ets.ets_mysql_lib import MysqlConnection as mc
+import ets.ets_certificate_lib as crt_lib
 from os.path import normpath, join
 from queries import *
 from config import *
@@ -12,10 +13,6 @@ DESCRIPTION = '''Скрипт для импорта данных из файло
 VERSION = '1.0'
 AUTHOR = 'Belim S.'
 RELEASE_DATE = '2018-03-30'
-
-types = {'mroot': {'file': 'mRoot_list.txt', 'storage_num': 1},
-         'mca': {'file': 'mCA_list.txt', 'storage_num': 2},
-         'crl': {'file': 'CRL_list.txt', 'storage_num': 3}}
 
 type_by_number = {1: 'mroot', 2: 'mca', 3: 'crl'}
 
@@ -60,6 +57,11 @@ def create_parser():
 
 
 def insert_worker(server, storage):
+
+    types = {'mroot': {'file': 'mRoot_%s.txt' % server, 'storage_num': 1},
+             'mca': {'file': 'mCA_%s.txt' % server, 'storage_num': 2},
+             'crl': {'file': 'CRL_%s.txt' % server, 'storage_num': 3}}
+
     # создаем подключение к нужной бд
     cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
     cn.connect()
