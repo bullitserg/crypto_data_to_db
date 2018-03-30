@@ -22,7 +22,7 @@ type_by_number = {1: 'mroot', 2: 'mca', 3: 'crl'}
 tmp_dir = normpath(tmp_dir)
 d_server_list = 1, 2, 4, 5
 d_storage_list = 'mroot', 'mca', 'crl'
-d_storage_numbers = range(1, stop=3)
+d_storage_numbers = range(1, 4)
 d_insert_datetime = datetime.now()
 
 u_server_list = []
