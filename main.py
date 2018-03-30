@@ -61,7 +61,7 @@ def create_parser():
 
 def insert_worker(server, storage):
     # создаем подключение к нужной бд
-    cn = mc(connection=mc.MS_BELIMTEST_CERT_INFO_CONNECT)
+    cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
     cn.connect()
 
     print('Получение данных сервера %s' % server)
@@ -93,7 +93,7 @@ def insert_worker(server, storage):
     for cert_key in sorted(c_info.keys()):
         d_insert = c_info[cert_key]
         for key in check_keys:
-             if key not in d_insert:
+            if key not in d_insert:
                 d_insert = ""
 
         # дополнительно у сертификата нужно заэкранировать
