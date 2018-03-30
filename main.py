@@ -131,16 +131,10 @@ if __name__ == '__main__':
 
         if namespace.file:
             u_storage_list.append(namespace.file)
-        else:
-            u_storage_list = d_storage_list
-
-        if namespace.number:
+        elif namespace.number:
             u_storage_list.append(type_by_number[namespace.number])
         else:
             u_storage_list = d_storage_list
-
-        # на тот случай, если объявлен и namespace.file и namespace.number - удалим дубликаты
-        u_storage_list = set(u_storage_list)
 
         if namespace.delete:
             delete = True
