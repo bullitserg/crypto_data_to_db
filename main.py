@@ -130,7 +130,7 @@ if __name__ == '__main__':
             u_server_list = d_server_list
 
         if namespace.file:
-            u_storage_list.append(namespace.server)
+            u_storage_list.append(namespace.file)
         else:
             u_storage_list = d_storage_list
 
