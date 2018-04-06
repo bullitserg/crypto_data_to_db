@@ -2,7 +2,7 @@ import ets.ets_certmanager_logs_parser as parser
 import argparse
 import logger_module
 from datetime import datetime
-from ets.ets_mysql_lib import MysqlConnection as mc
+from ets.ets_mysql_lib import MysqlConnection as mc, NULL, value_former
 import ets.ets_certificate_lib as crt_lib
 from os.path import normpath, join
 from queries import *
@@ -24,7 +24,7 @@ d_insert_datetime = datetime.now()
 
 u_server_list = []
 u_storage_list = []
-delete = True
+delete = False
 
 
 def show_version():
@@ -57,7 +57,6 @@ def create_parser():
 
 
 def insert_worker(server, storage):
-
     types = {'mroot': {'file': 'mRoot_%s.txt' % server, 'storage_num': 1},
              'mca': {'file': 'mCA_%s.txt' % server, 'storage_num': 2},
              'crl': {'file': 'CRL_%s.txt' % server, 'storage_num': 3}}
@@ -72,7 +71,10 @@ def insert_worker(server, storage):
 
     c_f = parser.CertmanagerFile(f, timezone=3)
     c_file_type = c_f.file_type
-    c_info = c_f.get_info(key='OrderNum')
+    if c_file_type == 'CERT':
+        c_info = c_f.get_info(key='SubjKeyID')
+    else:
+        c_info = c_f.get_info(key='AuthKeyID')
 
     # в зависимости от типа обрабатываемого файла нужно предопределить некоторый набор ключей
     # а так же определить запросы для добавления и удаления данных
@@ -89,22 +91,20 @@ def insert_worker(server, storage):
             cn.execute_query(crl_data_delete_query, server)
 
     # добавляем недостающие ключи в случае их отсутствия
-    for cert_key in sorted(c_info.keys()):
+    for cert_key in c_info.keys():
         d_insert = c_info[cert_key]
         for key in check_keys:
-            if key not in d_insert:
-                d_insert = ""
-
-        # дополнительно у сертификата нужно заэкранировать
-        if c_file_type == 'CERT':
-            for key in ('Issuer', 'Subject'):
+            if c_file_type == 'CERT' and key in ('Issuer', 'Subject'):
                 d_insert[key] = d_insert[key].replace("'", "\\'")
+            if key not in d_insert:
+                d_insert[key] = NULL
+            d_insert[key] = value_former(d_insert[key])
 
         # добавляем оставшиеся поля поля
-        d_insert['storage_num'] = types[storage]['storage_num']
-        d_insert['storage_name'] = storage
-        d_insert['server'] = server
-        d_insert['datetime'] = d_insert_datetime
+        d_insert['storage_num'] = value_former(types[storage]['storage_num'])
+        d_insert['storage_name'] = value_former(storage)
+        d_insert['server'] = value_former(server)
+        d_insert['datetime'] = value_former(d_insert_datetime)
 
         cn.execute_query(insert_query % d_insert)
 
