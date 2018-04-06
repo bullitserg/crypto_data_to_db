@@ -20,11 +20,11 @@ tmp_dir = normpath(tmp_dir)
 d_server_list = 1, 2, 4, 5
 d_storage_list = 'mroot', 'mca', 'crl'
 d_storage_numbers = range(1, 4)
+d_days = 10
 d_insert_datetime = datetime.now()
 
 u_server_list = []
 u_storage_list = []
-delete = False
 
 
 def show_version():
@@ -38,25 +38,37 @@ def create_parser():
     parser.add_argument('-v', '--version', action='store_true',
                         help="Show version")
 
+    parser.add_argument('-u', '--update', action='store_true',
+                        help="Update records in database for server and file.  Others: --server, --file, --number")
+
+    parser.add_argument('-f', '--fast_update_by_auth_key', action='store_true',
+                        help="Fast update records in database by auth_key. Must set --auth_key, others: --server")
+
+    parser.add_argument('-r', '--remove', action='store_true',
+                        help="Delete old records from database for server. Others: --server, --days")
+
     parser.add_argument('-s', '--server', type=int, choices=d_server_list,
                         help="Set server number")
 
-    parser.add_argument('-f', '--file', type=str, choices=d_storage_list,
+    parser.add_argument('-i', '--file', type=str, choices=d_storage_list,
                         help="Set storage file")
+
+    parser.add_argument('-k', '--auth_key', type=str,
+                        help="Set auth_key")
 
     parser.add_argument('-n', '--number', type=int, choices=d_storage_numbers,
                         help="Set storage number")
 
-    parser.add_argument('-d', '--delete', action='store_true',
-                        help="Delete old records from database for server and file")
-
-    parser.add_argument('-u', '--update', action='store_true',
-                        help="Update records in database for server and file")
+    parser.add_argument('-d', '--days', type=int,
+                        help="Set days count")
 
     return parser
 
 
-def insert_worker(server, storage):
+def insert_worker(server, storage, **kwargs):
+
+    auth_key = kwargs.get('auth_key')
+
     types = {'mroot': {'file': 'mRoot_%s.txt' % server, 'storage_num': 1},
              'mca': {'file': 'mCA_%s.txt' % server, 'storage_num': 2},
              'crl': {'file': 'CRL_%s.txt' % server, 'storage_num': 3}}
@@ -64,6 +76,27 @@ def insert_worker(server, storage):
     # создаем подключение к нужной бд
     cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
     cn.connect()
+
+    def insert_by_key(c_key):
+        d_insert = c_info.get(c_key, None)
+
+        if not d_insert:
+            print('Auth_key не найден')
+            return
+
+        # добавляем недостающие ключи в случае их отсутствия
+        for key in check_keys:
+            if key not in d_insert:
+                d_insert[key] = NULL
+            d_insert[key] = value_former(d_insert[key])
+
+        # добавляем оставшиеся поля поля
+        d_insert['storage_num'] = value_former(types[storage]['storage_num'])
+        d_insert['storage_name'] = value_former(storage)
+        d_insert['server'] = value_former(server)
+        d_insert['datetime'] = value_former(d_insert_datetime)
+
+        cn.execute_query(insert_query % d_insert)
 
     print('Обработка хранилища %s сервера %s' % (storage, server))
 
@@ -82,31 +115,17 @@ def insert_worker(server, storage):
             check_keys = ('OrderNum', 'Serial', 'SubjKeyID', 'Issuer', 'Subject', 'Not valid before', 'Not valid after',
                           'PrivateKey Link', 'PublicKey Algorithm', 'Signature Algorithm', 'SHA1 Hash')
             insert_query = certificate_data_insert_query
-            if delete:
-                cn.execute_query(certificate_data_delete_query, server, types[storage]['storage_num'])
     else:
         check_keys = ('OrderNum', 'Issuer', 'AuthKeyID', 'NextUpdate', 'ThisUpdate')
         insert_query = crl_data_insert_query
-        if delete:
-            cn.execute_query(crl_data_delete_query, server)
 
-    # добавляем недостающие ключи в случае их отсутствия
-    for cert_key in c_info.keys():
-        d_insert = c_info[cert_key]
-        for key in check_keys:
-            if c_file_type == 'CERT' and key in ('Issuer', 'Subject'):
-                d_insert[key] = d_insert[key].replace("'", "\\'")
-            if key not in d_insert:
-                d_insert[key] = NULL
-            d_insert[key] = value_former(d_insert[key])
-
-        # добавляем оставшиеся поля поля
-        d_insert['storage_num'] = value_former(types[storage]['storage_num'])
-        d_insert['storage_name'] = value_former(storage)
-        d_insert['server'] = value_former(server)
-        d_insert['datetime'] = value_former(d_insert_datetime)
-
-        cn.execute_query(insert_query % d_insert)
+    # если указан auth_key, то обрабатываем только по нему
+    if auth_key:
+        auth_key = auth_key.replace(' ', '')
+        insert_by_key(auth_key)
+    else:
+        for a_key in c_info.keys():
+            insert_by_key(a_key)
 
     cn.disconnect()
 
@@ -136,8 +155,26 @@ if __name__ == '__main__':
         else:
             u_storage_list = d_storage_list
 
-        if namespace.delete:
-            delete = True
+        if namespace.remove:
+            cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
+            cn.connect()
+            if namespace.server:
+                u_server_list.append(namespace.server)
+            else:
+                u_server_list = d_server_list
+
+            if namespace.days:
+                day = namespace.days
+            else:
+                day = d_days
+
+            for server in u_server_list:
+                cn.execute_query(certificate_data_delete_query, day, server)
+                cn.execute_query(crl_data_delete_query, day, server)
+
+            print('Сведения за %s дней удалены' % day)
+            cn.disconnect()
+            exit(0)
 
         if namespace.update:
             for server in u_server_list:
@@ -145,10 +182,25 @@ if __name__ == '__main__':
                 parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
+            exit(0)
 
-        else:
-            show_version()
-            print('For more information run use --help')
+        if namespace.fast_update_by_auth_key:
+            for server in u_server_list:
+                print('Получение данных сервера %s' % server)
+                parser.get_info_file(server, out_dir=tmp_dir)
+
+                if not namespace.auth_key:
+                    print('Укажите auth_key')
+                    exit(0)
+
+                for storage in u_storage_list:
+                    insert_worker(server, storage, auth_key=namespace.auth_key)
+
+                print('Сведения по auth_key "%s" обновлены' % namespace.auth_key)
+                exit(0)
+
+        show_version()
+        print('For more information run use --help')
 
     # если при исполнении будут исключения - кратко выводим на терминал, остальное - в лог
     except Exception as e:
