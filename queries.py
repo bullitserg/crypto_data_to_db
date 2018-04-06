@@ -14,7 +14,7 @@ certificate_data_insert_query = '''INSERT INTO
   privateKeyLink = %(PrivateKey Link)s,
   publicKeyAlgorithm = %(PublicKey Algorithm)s,
   signatureAlgorithm = %(Signature Algorithm)s,
-  sha1Hash = %(SHA1 Hash)s'
+  sha1Hash = %(SHA1 Hash)s,
   insertDateTime = %(datetime)s
   ;'''
 
