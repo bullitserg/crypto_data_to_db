@@ -133,7 +133,8 @@ def insert_worker(server, storage, **kwargs):
         auth_key = auth_key.replace(' ', '')
         insert_by_key(auth_key)
     else:
-        for a_key in c_info.keys():
+        # нужно хитро отсортировать по OrderNum, чтобы писаловь в базу упорядоченно
+        for a_key in sorted(c_info.keys(), key=lambda i: c_info[i]['OrderNum']):
             insert_by_key(a_key)
 
     cn.disconnect()
@@ -188,7 +189,7 @@ if __name__ == '__main__':
         if namespace.update:
             for server in u_server_list:
                 print('Получение данных сервера %s' % server)
-                parser.get_info_file(server, out_dir=tmp_dir)
+#                parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
             exit(0)
