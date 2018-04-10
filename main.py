@@ -3,7 +3,6 @@ import argparse
 import logger_module
 from datetime import datetime
 from ets.ets_mysql_lib import MysqlConnection as mc, NULL, value_former
-import ets.ets_certificate_lib as crt_lib
 from os.path import normpath, join
 from queries import *
 from config import *
@@ -36,31 +35,41 @@ def create_parser():
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
     parser.add_argument('-v', '--version', action='store_true',
-                        help="Show version")
+                        help="Показать версию программы")
 
     parser.add_argument('-u', '--update', action='store_true',
-                        help="Update records in database for server and file.  Others: --server, --file, --number")
+                        help='''Обновить записи в базе данных.
+                        Аргументы:
+                        --server - обновить для указанного сервера (необязательный);
+                        --file - обновить для указанного типа файла (необязательный);
+                        --number - обновить для указанного типа файла (по номеру, необязательный)''')
 
     parser.add_argument('-f', '--fast_update_by_auth_key', action='store_true',
-                        help="Fast update records in database by auth_key. Must set --auth_key, others: --server")
+                        help='''Быстрое обновление записей по указаному идентификатору.
+                        Аргументы:
+                        --auth_key - идентификатор (обязательный);
+                        --server - обновить для указанного сервера (необязательный)''')
 
     parser.add_argument('-r', '--remove', action='store_true',
-                        help="Delete old records from database for server. Others: --server, --days")
+                        help='''Удалить устаревшие записи из базы данных.
+                        Аргументы:
+                        --server - удалить для указанного сервера (необязательный),
+                        --days - за указанное количество дней (по умолчанию 10, необязательный)''')
 
     parser.add_argument('-s', '--server', type=int, choices=d_server_list,
-                        help="Set server number")
+                        help="Установить номер сервера")
 
     parser.add_argument('-i', '--file', type=str, choices=d_storage_list,
-                        help="Set storage file")
-
-    parser.add_argument('-k', '--auth_key', type=str,
-                        help="Set auth_key")
+                        help="Установить тип файла (строковый)")
 
     parser.add_argument('-n', '--number', type=int, choices=d_storage_numbers,
-                        help="Set storage number")
+                        help="Установить тип файла (числовой)")
+
+    parser.add_argument('-k', '--auth_key', type=str,
+                        help="Установить auth_key")
 
     parser.add_argument('-d', '--days', type=int,
-                        help="Set days count")
+                        help="Установить количество дней")
 
     return parser
 
