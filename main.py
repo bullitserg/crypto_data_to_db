@@ -98,7 +98,8 @@ def insert_worker(server, storage, **kwargs):
             value = d_insert.get(key, False)
             if not value:
                 d_insert[key] = NULL
-            d_insert[key] = value_former(d_insert[key])
+            else:
+                d_insert[key] = value_former(d_insert[key])
 
         # добавляем оставшиеся поля поля
         d_insert['storage_num'] = value_former(types[storage]['storage_num'])
