@@ -1,4 +1,4 @@
-import ets.ets_certmanager_logs_parser as parser
+import ets.ets_certmanager_logs_parser as l_parser
 import argparse
 import logger_module
 from datetime import datetime
@@ -104,14 +104,13 @@ def insert_worker(server, storage, **kwargs):
         d_insert['storage_name'] = value_former(storage)
         d_insert['server'] = value_former(server)
         d_insert['datetime'] = value_former(d_insert_datetime)
-
         cn.execute_query(insert_query % d_insert)
 
     print('Обработка хранилища %s сервера %s' % (storage, server))
 
     f = join(tmp_dir, types[storage]['file'])
 
-    c_f = parser.CertmanagerFile(f, timezone=3)
+    c_f = l_parser.CertmanagerFile(f, timezone=3)
     c_file_type = c_f.file_type
     if c_file_type == 'CERT':
         c_info = c_f.get_info(key='SubjKeyID')
@@ -189,7 +188,7 @@ if __name__ == '__main__':
         if namespace.update:
             for server in u_server_list:
                 print('Получение данных сервера %s' % server)
-#                parser.get_info_file(server, out_dir=tmp_dir)
+                l_parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
             exit(0)
@@ -197,7 +196,7 @@ if __name__ == '__main__':
         if namespace.fast_update_by_auth_key:
             for server in u_server_list:
                 print('Получение данных сервера %s' % server)
-                parser.get_info_file(server, out_dir=tmp_dir)
+                l_parser.get_info_file(server, out_dir=tmp_dir)
 
                 if not namespace.auth_key:
                     print('Укажите auth_key')
