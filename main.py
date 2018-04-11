@@ -95,7 +95,8 @@ def insert_worker(server, storage, **kwargs):
 
         # добавляем недостающие ключи в случае их отсутствия
         for key in check_keys:
-            if key not in d_insert:
+            value = d_insert.get(key, False)
+            if not value:
                 d_insert[key] = NULL
             d_insert[key] = value_former(d_insert[key])
 
