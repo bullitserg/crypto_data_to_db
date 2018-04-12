@@ -1,6 +1,7 @@
 import ets.ets_certmanager_logs_parser as l_parser
 import argparse
 import logger_module
+import progressbar
 from datetime import datetime
 from ets.ets_mysql_lib import MysqlConnection as mc, NULL, value_former
 from os.path import normpath, join
@@ -108,8 +109,6 @@ def insert_worker(server, storage, **kwargs):
         d_insert['datetime'] = value_former(d_insert_datetime)
         cn.execute_query(insert_query % d_insert)
 
-    print('Обработка хранилища %s сервера %s' % (storage, server))
-
     f = join(tmp_dir, types[storage]['file'])
 
     c_f = l_parser.CertmanagerFile(f, timezone=3)
@@ -134,10 +133,21 @@ def insert_worker(server, storage, **kwargs):
         auth_key = auth_key.replace(' ', '')
         insert_by_key(auth_key)
     else:
-        # нужно хитро отсортировать по OrderNum, чтобы писаловь в базу упорядоченно
+        # нужно хитро отсортировать по OrderNum, чтобы писалось в базу упорядоченно
+        key_d = sorted(c_info.keys(), key=lambda i: c_info[i]['OrderNum'])
+        key_status = 0
+
+        bar = progressbar.ProgressBar(maxval=len(key_d), widgets=[
+            'Обработка хранилища %s сервера %s' % (storage, server),
+            progressbar.Bar(left=' [', marker='#', right='] '),
+            progressbar.SimpleProgress(),
+        ]).start()
+
         for a_key in sorted(c_info.keys(), key=lambda i: c_info[i]['OrderNum']):
             insert_by_key(a_key)
-
+            key_status += 1
+            bar.update(key_status)
+        bar.finish()
     cn.disconnect()
 
 
@@ -193,6 +203,7 @@ if __name__ == '__main__':
                 l_parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
+            print('Данные обновлены')
             exit(0)
 
         if namespace.fast_update_by_auth_key:
