@@ -208,7 +208,7 @@ if __name__ == '__main__':
                     insert_worker(server, storage, auth_key=namespace.auth_key)
 
                 print('Сведения по auth_key "%s" обновлены' % namespace.auth_key)
-                exit(0)
+            exit(0)
 
         show_version()
         print('For more information run use --help')
