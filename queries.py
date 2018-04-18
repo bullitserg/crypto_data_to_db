@@ -42,3 +42,9 @@ crl_data_delete_query = '''DELETE
 WHERE insertDateTime < SUBDATE(DATE(NOW()), INTERVAL %s MINUTE)
 AND `server` = %s
 ;'''
+
+certificate_data_drop_active = '''UPDATE certificate_data cd
+SET cd.active = 0
+WHERE cd.active = 1
+AND cd.`server` = %s
+;'''

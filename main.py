@@ -184,7 +184,7 @@ if __name__ == '__main__':
             else:
                 u_server_list = d_server_list
 
-            if namespace.minutes:
+            if namespace.minutes in namespace:
                 minute = namespace.minutes
             else:
                 minute = d_minutes
@@ -199,6 +199,12 @@ if __name__ == '__main__':
 
         if namespace.update:
             for server in u_server_list:
+
+                # сброс всех старых записей на active = 0
+                cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
+                with cn.open():
+                    cn.execute_query(certificate_data_drop_active, server)
+
                 print('Получение данных сервера %s' % server)
                 l_parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
