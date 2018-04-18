@@ -48,3 +48,9 @@ SET cd.active = 0
 WHERE cd.active = 1
 AND cd.`server` = %s
 ;'''
+
+crl_data_drop_active = '''UPDATE crl_data cd
+SET cd.active = 0
+WHERE cd.active = 1
+AND cd.`server` = %s
+;'''

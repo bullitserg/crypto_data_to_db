@@ -204,6 +204,7 @@ if __name__ == '__main__':
                 cn = mc(connection=mc.MS_CERT_INFO_CONNECT)
                 with cn.open():
                     cn.execute_query(certificate_data_drop_active, server)
+                    cn.execute_query(crl_data_drop_active, server)
 
                 print('Получение данных сервера %s' % server)
                 l_parser.get_info_file(server, out_dir=tmp_dir)
