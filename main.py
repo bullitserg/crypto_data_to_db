@@ -20,7 +20,7 @@ tmp_dir = normpath(tmp_dir)
 d_server_list = 1, 2, 4, 5
 d_storage_list = 'mroot', 'mca', 'crl'
 d_storage_numbers = range(1, 4)
-d_days = 10
+d_minutes = 0
 d_insert_datetime = datetime.now()
 
 u_server_list = []
@@ -55,7 +55,7 @@ def create_parser():
                         help='''Удалить устаревшие записи из базы данных.
                         Аргументы:
                         --server - удалить для указанного сервера (необязательный),
-                        --days - за указанное количество дней (по умолчанию 10, необязательный)''')
+                        --minutes - за указанное количество минут (по умолчанию 0, необязательный)''')
 
     parser.add_argument('-s', '--server', type=int, choices=d_server_list,
                         help="Установить номер сервера")
@@ -69,8 +69,8 @@ def create_parser():
     parser.add_argument('-k', '--auth_key', type=str,
                         help="Установить auth_key")
 
-    parser.add_argument('-d', '--days', type=int,
-                        help="Установить количество дней")
+    parser.add_argument('-m', '--minutes', type=int,
+                        help="Установить количество минут")
 
     return parser
 
@@ -184,16 +184,16 @@ if __name__ == '__main__':
             else:
                 u_server_list = d_server_list
 
-            if namespace.days:
-                day = namespace.days
+            if namespace.minutes:
+                minute = namespace.minutes
             else:
-                day = d_days
+                minute = d_minutes
 
             for server in u_server_list:
-                cn.execute_query(certificate_data_delete_query, day, server)
-                cn.execute_query(crl_data_delete_query, day, server)
+                cn.execute_query(certificate_data_delete_query, minute, server)
+                cn.execute_query(crl_data_delete_query, minute, server)
 
-            print('Сведения за %s дней удалены' % day)
+            print('Сведения за %s минут удалены' % minute)
             cn.disconnect()
             exit(0)
 
