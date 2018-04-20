@@ -193,7 +193,9 @@ if __name__ == '__main__':
                 cn.execute_query(certificate_data_delete_query, minute, server)
                 cn.execute_query(crl_data_delete_query, minute, server)
 
-            print('Сведения за %s минут удалены' % minute)
+            info = 'Сведения за %s минут удалены' % minute
+            print(info)
+            logger.info(info)
             cn.disconnect()
             exit(0)
 
@@ -210,7 +212,10 @@ if __name__ == '__main__':
                 l_parser.get_info_file(server, out_dir=tmp_dir)
                 for storage in u_storage_list:
                     insert_worker(server, storage)
-            print('Данные обновлены')
+
+            info = 'Данные обновлены'
+            print(info)
+            logger.info(info)
             exit(0)
 
         if namespace.fast_update_by_auth_key:
@@ -225,7 +230,9 @@ if __name__ == '__main__':
                 for storage in u_storage_list:
                     insert_worker(server, storage, auth_key=namespace.auth_key)
 
-                print('Сведения по auth_key "%s" обновлены' % namespace.auth_key)
+                info = 'Сведения по auth_key "%s" обновлены' % namespace.auth_key
+                print(info)
+                logger.info(info)
             exit(0)
 
         show_version()
