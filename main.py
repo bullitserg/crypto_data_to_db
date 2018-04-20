@@ -20,7 +20,7 @@ tmp_dir = normpath(tmp_dir)
 d_server_list = 1, 2, 4, 5
 d_storage_list = 'mroot', 'mca', 'crl'
 d_storage_numbers = range(1, 4)
-d_minutes = 0
+d_minutes = 60
 d_insert_datetime = datetime.now()
 
 u_server_list = []
@@ -55,7 +55,7 @@ def create_parser():
                         help='''Удалить устаревшие записи из базы данных.
                         Аргументы:
                         --server - удалить для указанного сервера (необязательный),
-                        --minutes - за указанное количество минут (по умолчанию 0, необязательный)''')
+                        --minutes - за указанное количество минут (по умолчанию 60, необязательный)''')
 
     parser.add_argument('-s', '--server', type=int, choices=d_server_list,
                         help="Установить номер сервера")
@@ -184,7 +184,7 @@ if __name__ == '__main__':
             else:
                 u_server_list = d_server_list
 
-            if namespace.minutes in namespace:
+            if namespace.minutes:
                 minute = namespace.minutes
             else:
                 minute = d_minutes
