@@ -32,14 +32,14 @@ SET `server` = %(server)s,
 
 certificate_data_delete_query = '''DELETE
   FROM certificate_data
-WHERE insertDateTime < SUBDATE(DATE(NOW()), INTERVAL %s MINUTE)
+WHERE insertDateTime < SUBDATE(NOW(), INTERVAL %s MINUTE)
 AND `server` = %s
 ;'''
 
 
 crl_data_delete_query = '''DELETE
   FROM crl_data
-WHERE insertDateTime < SUBDATE(DATE(NOW()), INTERVAL %s MINUTE)
+WHERE insertDateTime < SUBDATE(NOW(), INTERVAL %s MINUTE)
 AND `server` = %s
 ;'''
 
