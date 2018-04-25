@@ -59,6 +59,6 @@ AND cd.`server` = %s
 crl_data_drop_active_for_auth_key = '''UPDATE crl_data cd
 SET cd.active = 0
 WHERE cd.active = 1
-AND cd.subjKeyID = %s
+AND cd.subjKeyID = '%s'
 AND cd.`server` = %s
 ;'''

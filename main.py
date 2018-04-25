@@ -134,7 +134,8 @@ def insert_worker(server, storage, **kwargs):
 
         # если используется быстрое обновление, необходимо выставить active=0 предыдущей записи auth_key
         if c_file_type == 'CRL':
-            cn.execute_query(crl_data_drop_active_for_auth_key, value_former(auth_key), server)
+            print(crl_data_drop_active_for_auth_key % (auth_key, server))
+            cn.execute_query(crl_data_drop_active_for_auth_key, auth_key, server)
 
         insert_by_key(auth_key)
     else:
