@@ -91,7 +91,7 @@ def insert_worker(server, storage, **kwargs):
         d_insert = c_info.get(c_key, None)
 
         if not d_insert:
-            print('Auth_key не найден')
+            print('%s: Auth_key не найден' % storage)
             return
 
         # добавляем недостающие ключи в случае их отсутствия
@@ -131,6 +131,11 @@ def insert_worker(server, storage, **kwargs):
     # если указан auth_key, то обрабатываем только по нему
     if auth_key:
         auth_key = auth_key.replace(' ', '')
+
+        # если используется быстрое обновление, необходимо выставить active=0 предыдущей записи auth_key
+        if c_file_type == 'CRL':
+            cn.execute_query(crl_data_drop_active_for_auth_key, server, value_former(auth_key))
+
         insert_by_key(auth_key)
     else:
         # нужно хитро отсортировать по OrderNum, чтобы писалось в базу упорядоченно
